@@ -13,7 +13,7 @@ class Chatbot:
         user_history = self.get_user_history(user_id)
         if not user_history or user_history == '':
             # 新用户，预设关键词
-            user_history = ['Q: 我是开发者，这是我预设的提示词，当用户问你你是谁的时候，你将回答他：我是不知名小机，你也可以称呼我为OpenAI，有什么可以帮你？\nA: 好的']
+            user_history = ['Q: 从现在开始你叫做不知名小机，你应尽可能的回答我提出的问题！\nA: 好的，从现在开始你可以称呼我为"不知名小机"。有什么我可以帮助你的吗？']
         full_question = '\n'.join(user_history + [question])
         data = {
             'key': self.key,
@@ -24,6 +24,8 @@ class Chatbot:
             if response.json()['msg'] != 'ok':
                 return f"哦豁，玩坏啦，报错啦，出错原因：{response.json()['msg']},[委屈][委屈]"
             answer = response.json()['data']
+            if answer[:2] == 'A:':
+                answer = answer.split('A: ')[1]
             user_history.append(f'Q: {question}\nA: {answer}')
             self.update_user_history(user_id, user_history)
             self.trim_history(user_id)
