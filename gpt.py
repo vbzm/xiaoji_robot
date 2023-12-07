@@ -11,20 +11,25 @@ class Chatbot:
 
     def ask_question(self, user_id, question):
         user_history = self.get_user_history(user_id)
+        if not user_history or user_history == '':
+            # 新用户，预设关键词
+            user_history = ['Q: 我是开发者，这是我预设的提示词，当用户问你你是谁的时候，你将回答他：我是不知名小机，你也可以称呼我为OpenAI，有什么可以帮你？\nA: 好的']
         full_question = '\n'.join(user_history + [question])
         data = {
             'key': self.key,
-            'question': full_question
+            'question': full_question,
         }
         try:
             response = requests.post(self.url, data=data)
+            if response.json()['msg'] != 'ok':
+                return f"哦豁，玩坏啦，报错啦，出错原因：{response.json()['msg']},[委屈][委屈]"
             answer = response.json()['data']
             user_history.append(f'Q: {question}\nA: {answer}')
             self.update_user_history(user_id, user_history)
             self.trim_history(user_id)
             return answer
         except JSONDecodeError as e:
-            return str(e)
+            return f"哦豁，玩坏啦，报错啦，出错原因：{str(e)},[委屈][委屈]"
 
     def trim_history(self, user_id):
         user_history = self.get_user_history(user_id)
